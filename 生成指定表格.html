@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .box {
+            padding: 50px 50px 0 50px;
+        }
+
+        tr {
+            display: flex;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 180px;
+            height: 30px;
+            line-height: 30px;
+            padding-left: 5px;
+            border: 1px solid #999;
+            font-size: 18px;
+        }
+
+        .text {
+            display: flex;
+            justify-content: space-around;
+            flex: 1;
+            width: 180px;
+            height: 30px;
+            line-height: 30px;
+            padding-left: 5px;
+            border: 1px solid #999;
+            background-color: orange;
+            font-size: 18px;
+        }
+
+        .input-text {
+            width: 80%;
+            background-color: orange;
+            outline: 0;
+            border: 0px;
+            font-size: 18px;
+        }
+
+        .text-btn {
+            width: 20%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <input type="text" class="input-line">行</br>
+        <input type="text" class="input-column">列</br>
+        <button>生成表格</button>
+        <table>
+            <!--  
+           <tr>
+             <td class="column"></td>
+             <td class='text'>
+                <input type="text" class="text">
+                <button>确定</button>
+             </td>
+            </tr>
+         -->
+        </table>
+    </div>
+    <script>
+        var inputLine = document.getElementsByClassName('input-line')[0]
+        var inputColumn = document.getElementsByClassName('input-column')[0]
+        var btn = document.querySelector('button')
+        var table = document.querySelector('table')
+        btn.onclick = function () {
+            if (!inputLine.value) {
+                alert('行不能为空,请重新输入')
+            } else if (!inputColumn.value) {
+                alert('列不能为空,请重新输入')
+            } else {
+                table.innerHTML = ''
+                // 生成表格
+                for (var i = 1; i <= inputLine.value; i++) {
+                    // 行
+                    var tr = document.createElement('tr')
+                    for (var j = 1; j <= inputColumn.value; j++) {
+                        // 列
+                        var td = document.createElement('td')
+                        td.className = 'column'
+                        td.textContent = i + '行' + j + '列'
+
+                        var text = document.createElement('td')
+                        text.className = 'text'
+                        text.style.display = 'none'
+                        // 编辑文本
+                        var inputText = document.createElement('input')
+                        inputText.value = td.textContent
+                        inputText.className = 'input-text'
+                        // 确认按钮
+                        var button = document.createElement('button')
+                        button.className = 'text-btn'
+                        button.textContent = '确认'
+
+                        text.appendChild(inputText)
+                        text.appendChild(button)
+                        tr.appendChild(td)
+                        tr.appendChild(text)
+                        table.appendChild(tr)
+                    }
+                }
+           
+
+            }
+        }     // 使用e.target 可以获取真实触发该事件的元素 
+                table.ondblclick = function (e) {
+                    // 目标触发块 span: eTar
+                    var eTar = e.target
+                    // 隐藏的 span: eTarNext
+                    var eTarNext = e.target.nextElementSibling
+                    if (e.target.className == 'column') {
+                        // 隐藏该文本块
+                        eTar.style.display = 'none'
+                        // 显示要编辑的文本块
+                        eTarNext.style.display = 'block';
+                        // 文本块自动获取光标
+                        eTarNext.firstElementChild.focus();
+                        // 点击的确认按钮事件
+
+                        //     eTarNext.lastElementChild.onclick = function () {
+                        //         console.log('123');
+                        //         // 将编辑好的文本赋值给 隐藏的文本块
+                        //         eTar.textContent = this.previousElementSibling.value
+                        //         // 当前文本块 隐藏
+                        //         eTar.style.display = 'block'
+                        //         // 显示原先的文本块
+                        //         eTarNext.style.display = 'none'
+                        //     }
+                    }
+                    // 移除光标(注意: 获取光标和移除光标必须是同一元素)
+                    eTarNext.firstElementChild.onblur = function () {
+                        eTar.textContent = this.value
+                        this.parentNode.style.display = 'none'
+                        this.parentNode.previousElementSibling.style.display = 'block'
+                    }
+
+                }
+    </script>
+</body>
+
+</html>
