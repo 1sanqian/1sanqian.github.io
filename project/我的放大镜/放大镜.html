@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .box {
+            position: relative;
+            display: inline-block;
+            vertical-align: top;
+            width: 300px;
+            height: 300px;
+            border: 1px solid #ddd;
+        }
+
+        .box img {
+            width: 300px;
+            height: 300px;
+        }
+
+        .small {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            width: 125px;
+            height: 125px;
+            background-color: rgb(247, 215, 220, 0.5);
+        }
+
+        .locat {
+            position: absolute;
+            display: none;
+            top: 8px;
+            left: 320px;
+            vertical-align: top;
+            width: 375px;
+            height: 375px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .locat img {
+            position: absolute;
+            width: 900px;
+            height: 900px;
+        }
+    </style>
+    <script src="./js/放大镜.js"></script>
+</head>
+
+<body>
+    <div class="box">
+        <!-- <img src="./1.jpg" alt="1">
+            <div class="small"></div> -->
+    </div>
+    <div class="locat"></div>
+    <script>
+        onload = function () {
+            var box = document.getElementsByClassName('box')[0]
+            var locat = document.getElementsByClassName('locat')[0]
+            Amplification(box, "./1.jpg", locat)
+        }
+    </script>
+</body>
+
+</html>

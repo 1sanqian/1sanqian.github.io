@@ -1,0 +1,70 @@
+.section-three {
+    width: 100%;
+    height: 417px;
+    text-align: center;
+    padding: 112px 0;
+    background-color: #fff;
+}
+
+.section-three div {
+    display: inline-block;
+    vertical-align: top;
+    width: 349px;
+    height: 247px;
+    padding: 40px;
+    margin: 0 15px;
+}
+
+.section-o,
+.section-o span {
+    background-color: var(--orange);
+}
+
+.section-o span,
+.section-t span,
+.section-th span {
+    position: relative;
+    margin-top: -80px;
+    margin-left: 94px;
+    display: block;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    padding: 24px 24px;
+}
+
+.section-o span img,
+.section-t span img,
+.section-th span img {
+    display: block;
+    height: 32px;
+}
+
+.section-o h2,
+.section-t h2,
+.section-th h2 {
+    font-size: 18px;
+    line-height: 1.2;
+    margin-top: 20px;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.section-o p,
+.section-t p,
+.section-th p {
+    font-size: 17px;
+    color: var(--light);
+    line-height: 1.7;
+}
+
+
+.section-t,
+.section-t span {
+    background-color: var(--yellow);
+}
+
+.section-th,
+.section-th span {
+    background-color: var( --teal);
+}

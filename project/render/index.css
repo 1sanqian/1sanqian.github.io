@@ -1,0 +1,70 @@
+* {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    box-sizing: border-box;
+}
+
+#app {
+    width: 1160px;
+    height: 332px;
+    margin: 10px auto;
+}
+
+.carousel {
+    position: relative;
+    width: 1080px;
+    height: 400px;
+    overflow: hidden;
+}
+
+.carousel ul {
+    position: absolute;
+    /* 父元素宽度的10倍,至多能放十张图 */
+    width: 1000%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.carousel ul li {
+    float: left;
+    width: 10%;
+    height: 100%;
+}
+
+.carousel .ul-dot {
+    position: absolute;
+    left: 50px;
+    bottom: 10px;
+    width: 200px;
+    height: 20px;
+    padding-top: 5px;
+    padding-left: 5px;
+    /* background-color: blue; */
+    z-index: 99;
+}
+
+.carousel .ul-dot .dot {
+    display: block;
+    margin-right: 5px;
+    border-radius: 999px;
+    width: 12px;
+    height: 12px;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.carousel .ul-dot .active {
+    background-color: #fff;
+    /* 隐形x-偏移量 y-偏移量 模糊度 阴影大小 阴影颜色 */
+    box-shadow: 0 0 0px 3px rgba(128, 128, 128, 0.3);
+}
+
+.title {
+    position: absolute;
+    text-align: center;
+    width: 1080px;
+    height: 50px;
+    line-height: 50px;
+    color: #fff;
+    background-color:rgb(202, 193, 193,0.3);
+}

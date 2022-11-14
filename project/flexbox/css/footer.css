@@ -1,0 +1,115 @@
+/* 底部版权 */
+.footer {
+    box-sizing: border-box;
+    padding: 15px 25px;
+    width: 100%;
+    height: 218px;
+    background-color: #fff;
+}
+
+.footer-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-info button {
+    box-sizing: border-box;
+    width: 55px;
+    height: 27px;
+    padding: 1px 6px;
+    border: 0;
+    border-radius: 8px;
+    font-size: 13px;
+    background-color: var(--ly59-u);
+}
+
+.footer-city {
+    font-size: 0;
+}
+
+.footer-city img {
+    vertical-align: top;
+    margin-right: 3px;
+    width: 12px;
+    height: 14px;
+}
+
+.footer-city span:nth-of-type(1) {
+    font-size: 13px;
+    color: var(--Ga6_u);
+}
+
+.footer-city span:nth-of-type(2) {
+    font-size: 13px;
+    color: #000;
+}
+
+.footer .main-link {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    margin-top: 25px;
+    width: 100%;
+    height: 12px;
+    font-size: 12px;
+    color: var(--ly59-u);
+}
+
+.footer .main-link li {
+    padding-right: 19px;
+    border-right: 1px solid var(--Si5_u);
+}
+
+.footer .main-link li:nth-last-of-type(1) {
+    padding-right: 0;
+    border: 0;
+}
+
+.friend-link-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 15px;
+    font-size: 12px;
+    color: var(--Ga6_u);
+}
+
+.friend-link-label,
+.friend-link {
+    height: 16px;
+    margin-top: 10px;
+    text-align: center;
+    line-height: 16px;
+}
+
+.friend-link:not(:nth-of-type(1)) {
+    margin-left: 19px;
+}
+
+.footer-certificate {
+    position: relative;
+    width: 100%;        
+    margin-top: 15px;
+    font-size: 12px;
+    color: var(--Ga5_u);
+    text-align: center;          
+}
+
+.footer-hr {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    border-bottom: 1px solid var(--Ga5_u);
+}
+
+.footer-certificate span {
+    position: relative;
+    padding: 0 15px;
+    height: 16px;
+    line-height: 16px;
+    background-color: #fff;
+    z-index: 10;
+}

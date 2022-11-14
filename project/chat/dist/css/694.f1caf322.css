@@ -1,0 +1,1 @@
+.video{position:relative;width:100vw;height:100vh;z-index:999;padding-top:46px;background:var(--theme-background-black)}.video .tab{background:hsla(0,20%,94%,.1)}.video .tab .van-nav-bar__title{color:#fff}.video .video-wrap{width:100vw;height:calc(100vh - 46px);background:var(--theme-background-black)}

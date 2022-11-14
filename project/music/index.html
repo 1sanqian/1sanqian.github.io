@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="./index.css">
+    <meta name="referrer" content="never">
+
+</head>
+
+<body>
+    <!-- 音乐播放列表 -->
+    <ul class="list"></ul>
+    <!-- 歌曲详情列表 -->
+    <div class="lyrics-page"></div>
+    <script>
+        // 移动端的
+        // 播放列表页面.list渲染, 点击每一条数据, 让 .list display:block; 
+        // 音乐详情页.lyrics-page显示出来, 音乐详情页面有一个返回按钮(左上角), 实现 音乐详情页和 音乐播放页面的切换
+        // 有音乐收藏列表(右下角),点击可以切换音乐详情页,收藏按钮可以进行本地数据持久化 在左下角爱心图片,是收藏和取消收藏该音乐
+
+        class MusicList {
+            constructor($ul) {
+                // 音乐列表
+                this.$ul = $ul
+                // 音乐列表的每条音乐
+                this.$li = null
+                // 每次数据请求的data(url不一样, data也不一样)
+                this.data = null
+                // 音乐播放器  总时间(拖动进度条时使用, 用歌曲总时间, 进度条总宽度, 当前拖拽宽度计算当前 轮播到的时间)
+                this.prevTime = 1
+                // 包含歌词的时间和歌词内容:数组,歌词轮播时使用
+                this.timeWord = []
+                // 本地数据持久化时使用
+                this.collectArr = []
+                // 歌曲按钮: 控制播放和暂停
+                this.$start = null
+                // 本次页面的音乐播放器
+                this.$audio = null
+                // 每次进入新的音乐详情页面,清空 '其他的音乐播放器',记录本次播放器以外的其他播放器
+                this.otherAudio = null
+
+                this.getMusic('https://apis.netstart.cn/music/personalized/newsong', this.init)
+            }
+
+            // 请求音乐列表数据
+            async getMusic(url, fn) {
+                let self = this
+                await $.get(url).then(data => {
+                    fn && fn(data, self)
+                    self.data = data
+                })
+            }
+
+            // 渲染音乐列表页面
+            init(data, self) {
+                data = data.result
+                for (let i = 0; i < data.length; i++) {
+                    self.$li = $('<li>').addClass('li').attr('data-id', data[i].id).appendTo(self.$ul)
+
+                    let $left = $('<div>').addClass('left').appendTo(self.$li)
+
+                    $('<div>').text(data[i].name).addClass('music-name').appendTo($left)
+
+                    let author = data[i].song.artists[0].name
+
+                    let album = data[i].song.album.name
+
+                    $('<div>').text(`${author}-${album}`).addClass('icon').appendTo($left)
+
+                    let $right = $('<div>').addClass('right').appendTo(self.$li)
+                }
+
+                self.addEvent()
+            }
+
+            // 音乐列表点击歌曲
+            addEvent() {
+                let self = this
+                $('.list').on('click', 'li', function () {
+                    // 防抖, 防止创建多个音乐详情页面
+                    self.debounce(self.getWordPack(this))
+                }
+                )
+            }
+
+            // 防抖函数
+            debounce(func) {
+                let timer
+                return function (evt) {
+                    clearTimeout(timer)
+                    func = func.bind(this, evt)
+                    // 1s 内重复触发创建音乐详情页面的话, 只生效一次
+                    timer = setTimeout(func, 1000)
+                }
+            }
+
+            // 歌曲请求数据封装
+            getWordPack(that) {
+                let self = this
+                let music = $(that).children().children('.music-name').text()
+                let id = that.dataset.id
+                // 请求音乐歌词详情
+                $.get(
+                    `https://apis.netstart.cn/music/lyric?id=${id}`,
+                    function (data) {
+                        self.lyricsPageInit(id, data.lrc.lyric, music);
+                    }
+                )
+                
+            }
+
+            // 音乐详情页面渲染
+            lyricsPageInit(id, lyrics, musicName) {
+                let self = this
+                this.$ul.css('display', 'none')
+                $('.lyrics-page').css('display', 'block')
+
+                let $musicLyr = $('<div>').addClass('lyrics').appendTo($('.lyrics-page'))
+
+                // 背景渲染
+                this.getMusic('https://apis.netstart.cn/music/personalized/newsong')
+                let data = this.data.result;
+
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i].id == id) {
+                        $musicLyr.css({
+                            'background-image': `url(${data[i].picUrl})`,
+                            'background-size': '120% 100%',
+                            'background-position': '50% 0px',
+                            'background-repeat': 'no-repeat'
+                        })
+                    }
+                }
+
+
+                let $header = $('<div>').addClass('header').appendTo($musicLyr)
+
+                let $return = $('<div>').addClass('return').appendTo($header)
+
+                let $musicName = $('<div>').text(musicName).addClass('title').appendTo($header)
+
+                let $lyr = $('<div>').addClass('music-word').appendTo($musicLyr)
+
+                $return.on('click', function () {
+                    self.$ul.css('display', 'block')
+                    $('.lyrics-page').css('display', 'none')
+                    $musicLyr.remove()
+                })
+                // 歌曲歌词解析
+                this.lyricsAnalysis(lyrics, $lyr)
+                // 各音乐播放控件渲染及功能
+                this.control(id, musicName, $musicLyr)
+                // 渲染收藏列表, 监听收藏
+                this.collect(id)
+                // 音乐控制播放暂停, 进度条单击音乐进度, 歌词高亮
+                this.musicPlay()
+                // 音乐详情页的收藏渲染
+                this.renderCollect(id)
+                // 数据持久化渲染列表
+                this.collectList()
+            }
+
+            // 歌曲歌词解析
+            lyricsAnalysis(data, $lyr) {
+                let arr = []
+                data.replace(/^\[(\d+):(\d+\.\d+)\]([\S ]*)$/mg, function (match, $1, $2, $3) {
+                    let obj = {
+                        timer: $1 * 60 + parseFloat($2),
+                        text: $3
+                    }
+                    arr.push(obj)
+                })
+                for (let i = 0; i < arr.length; i++) {
+                    let $word = $('<div>').text(`${arr[i].text}`).appendTo($lyr)
+                }
+
+                this.timeWord = arr
+                this.timeWord.push({
+                    timer: Infinity,
+                    text: ''
+                })
+
+            }
+
+            // 各音乐播放控件渲染及功能
+            control(id, musicName, $musicLyr) {
+                let self = this
+                let $itemProgress = $('<div>').addClass('item').appendTo($musicLyr)
+                let $progress = $('<progress value="0" max="100">').addClass('progress').appendTo($itemProgress)
+                $progress[0].onclick = function (e) {
+                    let cb = true
+                    self.timesAnalyse(e.offsetX, this.offsetWidth, cb)
+                }
+                let $itemMain = $('<div>').addClass('item-main').appendTo($itemProgress)
+                // 其他的audio 要在 点击播放清除, 在先这里记录其他的audio
+                this.otherAudio = $('audio')
+                $('.lyrics-page .control').remove()
+                this.$audio = $(`<audio src="https://music.163.com/song/media/outer/url?id=${id}.mp3" autoplay preload="auto">`).appendTo($('.lyrics-page')).addClass('control')
+
+                //左边的是收藏
+                let $itemLeft = $('<div>').appendTo($itemMain).addClass('item-left')
+                this.getMusic('https://apis.netstart.cn/music/personalized/newsong')
+                let data = this.data.result;
+
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i].id == id) {
+                        $(`<img src="${data[i].picUrl}">`).appendTo($itemLeft).addClass('item-left-img')
+                        let $music = $('<div>').appendTo($itemLeft)
+                        $('<p>').text(musicName).appendTo($music)
+                        $('<span>').appendTo($music).addClass('love uncollect').attr('data-id', id)
+                    }
+                }
+                let $itemcenter = $('<div>').appendTo($itemMain).addClass('item-center')
+                let $prev = $('<span>').addClass('prev').appendTo($itemcenter)
+
+                // 调用控制播放歌曲
+                this.$start = $('<span>').addClass('start').appendTo($itemcenter)
+
+                let $next = $('<span>').addClass('next').appendTo($itemcenter)
+                let $itemright = $('<div>').appendTo($itemMain).addClass('item-right')
+                let $time = $('<span>').text('00:00/00:00').addClass('time').appendTo($itemright)
+
+                let $collectList = $('<span>').addClass('collect-list').appendTo($itemright)
+            }
+
+            // 音乐控制播放暂停, 进度条单击音乐进度, 歌词高亮
+            musicPlay() {
+                let self = this
+                let i = 1
+                self.musicPlayUpdate()
+                this.$start.on('click', function () {
+                    i++
+                    i = i % 2
+                    if (i % 2 == 1) {
+                        self.$audio[0].play()
+                        self.musicPlayUpdate()
+                        self.otherAudio.remove()
+                        $(this).removeClass('pause').addClass('start')
+                    } else {
+                        self.$audio[0].pause()
+                        $(this).removeClass('start').addClass('pause')
+                    }
+
+                })
+            }
+
+            // 歌词对应高亮,进度条更新
+            musicPlayUpdate() {
+                let self = this
+
+                self.$audio[0].ontimeupdate = function () {
+                    let allTime = this.duration
+                    let currentTime = this.currentTime
+                    self.prevTime = allTime
+                    let isExsit = $('.progress')[0] ? true : false
+                    if (isExsit) {
+                        self.timesAnalyse(currentTime, allTime)
+                    }
+
+                    for (let i = 0; i < self.timeWord.length - 1; i++) {
+                        if (this.currentTime >= self.timeWord[i].timer && this.currentTime < self.timeWord[i + 1].timer) {
+                            $($('.music-word div')[i]).addClass('word').siblings().removeClass('word')
+                            $($('.music-word div')[0]).css(
+                                'margin-top', `${200 - 25 * i}px`
+                            )
+                            if (i == self.timeWord.length - 2) {
+                                self.$start.removeClass('start').addClass('pause')
+                                this.pause()
+                                $($('.music-word div')[0]).css(
+                                    'margin-top', `200px`
+                                )
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            // 计算时间与进度条对应进度
+            timesAnalyse(currentTime, allTime, cb) {
+                let self = this
+                if (cb) {
+                    let onclickTime = ((this.prevTime * currentTime) / allTime).toFixed(6);
+                    $('audio')[0].currentTime = Number(onclickTime)
+                    cb = false
+                }
+                $('.progress')[0].value = 100 * currentTime / allTime
+                let str = ''
+                allTime = `0${parseInt(allTime / 60)}:${parseInt(allTime % 60)}`
+                if (currentTime < 10) {
+                    str = `00:0${parseInt(currentTime)}/${allTime}`
+                } else if (currentTime >= 10 && currentTime < 60) {
+                    str = `00:${parseInt(currentTime)}/${allTime}`
+                } else if (currentTime >= 60 && (currentTime / 60) < 10 && (currentTime % 60) <= 10) {
+                    str = `0${parseInt(currentTime / 60)}:0${parseInt(currentTime % 60)}/${allTime}`
+                } else if (currentTime >= 60 && (currentTime / 60) < 10 && (currentTime % 60) > 10) {
+                    str = `0${parseInt(currentTime / 60)}:${parseInt(currentTime % 60)}/${allTime}`
+                }
+                $('.time').text(`${str}`)
+            }
+
+            // 渲染收藏列表, 监听收藏
+            collect(id) {
+                let music = 'music'
+                let self = this
+                $('.lyrics').on('click', '.love', function () {
+                    self.getMusic('https://apis.netstart.cn/music/personalized/newsong')
+                    let data = self.data.result
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i].id == id) {
+                            let text = (data[i].song.duration).toFixed()
+                            let times = text.slice(0, 3)
+                            let obj = {
+                                id: data[i].id,
+                                name: data[i].name,
+                                author: data[i].song.artists[0].name,
+                                time: `${parseInt(times / 60)}:${times % 60}`
+                            }
+                            self.refresh(id, obj, music)
+                        }
+                    }
+                })
+
+            }
+
+            // 数据持久化 
+            refresh(id, obj, music) {
+                let icon = $('.love')[0]
+                this.collectArr = JSON.parse(localStorage.getItem(music)) ?? []
+                if (icon.className == 'love uncollect') {
+                    if (this.collectArr.length == 0) {
+                        this.collectArr.push(obj)
+                        $(icon).addClass('collect').removeClass('uncollect')
+                    } else {
+                        let flag = true
+                        this.collectArr.forEach((item) => {
+                            if (id == item.id) {
+                                flag = false
+                            }
+                        })
+
+                        if (flag) {
+                            this.collectArr.push(obj)
+                            $(icon).addClass('collect').removeClass('uncollect')
+                        }
+
+                    }
+                    localStorage.music = JSON.stringify(this.collectArr)
+                } else if (icon.className == 'love collect') {
+                    $(icon).addClass('uncollect').removeClass('collect')
+                    this.collectArr = this.collectArr.filter((item) => {
+                        if (item.id == id) {
+                            return false
+                        }
+                        return true
+                    })
+                    localStorage.music = JSON.stringify(this.collectArr)
+
+                }
+                this.updataCollectList($('.collect-box'), this.collectArr)
+            }
+
+            // 音乐详情页的收藏渲染
+            renderCollect(id) {
+                this.collectArr = localStorage.music ? JSON.parse(localStorage.music) : []
+                this.collectArr.forEach((item) => {
+                    if (id == item.id) {
+                        $('.love').addClass('collect').removeClass('uncollect')
+                    }
+                })
+            }
+
+            // 数据持久化渲染列表
+            collectList() {
+                let self = this
+                this.collectArr = localStorage.music ? JSON.parse(localStorage.music) : []
+
+                let $ul = $('<ul>').addClass('collect-box').appendTo($('.collect-list'))
+                this.updataCollectList($ul, this.collectArr)
+                let i = 0
+                $('.lyrics').on('click', '.collect-list', function () {
+                    i++
+                    i = i % 2
+                    if (i == 1) {
+                        $(this).children().css('display', 'block')
+                    } else {
+                        $(this).children().css('display', 'none')
+                    }
+
+                })
+            }
+
+            // 收藏列表更新 
+            updataCollectList($ul, collectArr) {
+                $ul.children().remove()
+                let self = this
+                for (let i = 0; i < collectArr.length; i++) {
+                    let $li = $('<li>').addClass('collect-li').attr('data-id', collectArr[i].id).appendTo($ul)
+                    $li.on('click', function () {
+                        $('.lyrics').remove()
+                        $('.lyrics-page .control').remove()
+                        self.getWordPack(this)
+                    })
+                    let $liLeft = $('<span>').addClass('li-left').appendTo($li)
+                    $('<span>').text(collectArr[i].name).appendTo($liLeft).addClass('music-name')
+                    let $liRight = $('<span>').appendTo($li).addClass('li-right')
+                    $('<span>').text(collectArr[i].author).appendTo($liRight)
+                    $('<span>').text(collectArr[i].time).appendTo($liRight)
+                }
+            }
+        }
+        new MusicList($('.list'))
+    </script>
+</body>
+
+</html>

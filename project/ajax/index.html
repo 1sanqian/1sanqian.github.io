@@ -1,0 +1,179 @@
+<!--
+ * @Author: 1三千 1196094290@qq.com
+ * @Date: 2022-08-25 17:08:06
+ * @LastEditors: 1三千 1196094290@qq.com
+ * @LastEditTime: 2022-08-26 20:45:52
+ * @FilePath: \queqiang\8月\js阶段考核\index.html
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="never">
+    <title>Document</title>
+
+    <style>
+        * {
+            margin: 0 auto;
+        }
+
+        .title {
+            max-width: max-content;
+            margin: 50px 50px;
+            padding: 0;
+            list-style: none;
+            text-align: left;
+        }
+
+        .title div {
+            white-space: nowrap;
+            line-height: 30px;
+            font-size: 0;
+        }
+
+        .title .titleId {
+            color: #ccc;
+        }
+
+        .title div span {
+            min-width: max-content;
+            height: 30px;
+            display: inline-block;
+            font-size: 15px;
+            padding: 0 5px;
+            /* background-color: pink; */
+        }
+
+        .title .active {
+            color: skyblue;
+        }
+
+        .pic {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            flex-wrap: wrap;
+            white-space: wrap;
+            width: 1200px;
+            text-align: center;
+        }
+
+        .picbox {
+            overflow: hidden;
+            display: inline-block;
+            margin: 5px;
+            width: 180px;
+            height: 240px;
+        }
+
+        .picc {
+            display: inline-block;
+            margin: 5px;
+            height: 240px;
+        }
+    </style>
+    <script src="./jquery-3.6.0.min.js"></script>
+    <script src="./NavControl.js"></script>
+</head>
+
+<body>
+    <div class="title">
+    </div>
+    <div class="pic"></div>
+    <script>
+        $(function () {
+            var styleId = {
+                '题材': 'styleId',
+                '地区': 'areaId',
+                '进度': 'isFinish',
+                '收费': 'isFree',
+                '排序': 'order',
+            }
+            var keyNumber = {
+                '题材': {
+                    '全部': -1,
+                    '热血': 999,
+                    '古风': 997,
+                    '玄幻': 1016,
+                    '奇幻': 998,
+                    '悬疑': 1023,
+                    '都市': 1002,
+                    '历史': 1096,
+                    '武侠仙侠': 1092,
+                    '游戏竞技': 1088,
+                    '悬疑灵异': 1081,
+                    '架空': 1063,
+                    '青春': 1060,
+                    '西幻': 1054,
+                    '现代': 1048,
+                    '正能量': 1028,
+                    '科幻': 1015
+                },
+                '地区': {
+                    '全部': -1,
+                    '大陆': 1,
+                    '日本': 2,
+                    '韩国': 6,
+                    '其他': 5
+
+                },
+                '进度': {
+                    '全部': -1,
+                    '连载': 0,
+                    '完结': 1
+                },
+                '收费': {
+                    '全部': -1,
+                    '免费': 1,
+                    '付费': 2,
+                    '等就免费': 3
+                },
+                '排序': {
+                    '人气推荐': 0,
+                    '更新时间': 1,
+                    '追漫人数': 2,
+                    '上架时间': 3
+                }
+            }
+            var $title = $('.title')
+            var $pic = $('.pic')
+            var obj = {
+                styleId: -1,
+                areaId: - 1,
+                isFinish: - 1,
+                isFree: -1,
+                order: 0,
+            }
+            $.ajax({
+                type: 'GET',
+                url: 'https://apis.netstart.cn/bcomic/ClassPage?',
+                data: obj,
+                timeout: 15000,
+                error: function (err) {
+                    console.log('请求失败', err);
+                },
+                success: function (data) {
+                    console.log('请求成功', data);
+                    for (var i = 0; i < data.data.length; i++) {
+                        var $div = $('<div></div>')
+                        $div.addClass('picbox')
+                        $div.appendTo($pic)
+                        var $img = $('<img src="' + data.data[i].vertical_cover + '">')
+                        $img.addClass('picc')
+                        $img.appendTo($div)
+                    }
+
+                }
+            })
+
+            var t = new NavControl(styleId, keyNumber, $title, $pic, obj)
+
+        })
+    </script>
+</body>
+
+</html>
